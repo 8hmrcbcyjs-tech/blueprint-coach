@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>The Blueprint Coach</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { background:#0d0f12; color:#e8edf2; font-family: Inter, system-ui, sans-serif; margin:0; padding:40px 20px; }
+    .wrap { max-width:720px; margin:0 auto; }
+    h1 { margin:0 0 8px; font-weight:800; letter-spacing:0.5px; }
+    .sub { color:#8aa0b4; margin-bottom:24px; }
+    .card { background:#151a20; border:1px solid #1e2530; border-radius:14px; padding:16px; }
+    input, textarea { width:100%; background:#0d0f12; color:#e8edf2; border:1px solid #2a3340; border-radius:10px; padding:12px; margin:8px 0 12px; }
+    button { background:#1a73e8; color:#fff; border:0; padding:12px 16px; border-radius:10px; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:0.6; cursor:not-allowed; }
+    .reply { white-space:pre-wrap; margin-top:12px; color:#7bdcff; }
+    .muted { color:#8aa0b4; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🧠 The Blueprint Coach</h1>
+    <div class="sub">Ask for today’s top 3 actions. The coach uses your metrics (stubbed for now).</div>
+
+    <div class="card">
+      <label>Message to Coach</label>
+      <textarea id="msg" rows="3" placeholder="Example: My HRV dipped and I slept 5.5h. What should I do today?"></textarea>
+
+      <label class="muted">Sample Metrics JSON (edit if you like)</label>
+      <textarea id="metrics" rows="5">{ "HRV": 38, "sleep_hours": 5.5, "protein_g": 120, "rhr": 63 }</textarea>
+
+      <button id="send" onclick="ask()">Ask Coach</button>
+      <div id="reply" class="reply"></div>
+    </div>
+
+    <p class="muted">Tip: tweak metrics, ask again, and watch the plan change.</p>
+  </div>
+
+  <script>
+    async function ask() {
+      const btn = document.getElementById("send");
+      const message = document.getElementById("msg").value || "What are my top 3 actions today?";
+      let metrics = {};
+      try { metrics = JSON.parse(document.getElementById("metrics").value || "{}"); } catch {}
+      btn.disabled = true; btn.textContent = "Thinking...";
+      const res = await fetch("/coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, metrics })
+      });
+      const data = await res.json();
+      document.getElementById("reply").textContent = data.reply || "No reply.";
+      btn.disabled = false; btn.textContent = "Ask Coach";
+    }
+  </script>
+</body>
+</html>
